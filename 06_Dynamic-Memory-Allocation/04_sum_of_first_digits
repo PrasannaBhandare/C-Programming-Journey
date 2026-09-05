@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h> // for malloc and free
+
+// 1. Declarations
+int get_first_digit(int num);
+int sum_of_first_digits(const int *p, int n);
+
+int main(void) {
+    int n, i;
+    int *p = NULL; // Tame the beast: initialize to safe state
+
+    printf("Enter number of elements: ");
+    scanf("%d", &n);
+
+    if (n <= 0) {
+        printf("Invalid array size!\n");
+        return 1;
+    }
+
+    // Step 1: Allocate memory on Heap
+    p = (int *)malloc(n * sizeof(int));
+
+    // Step 2: Safety NULL check
+    if (p == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Step 3: Fill heap memory
+    printf("Enter %d elements:\n", n);
+    for (i = 0; i < n; i++) {
+        scanf("%d", p + i);
+    }
+
+    // Step 4: Process using function
+    int total = sum_of_first_digits(p, n);
+    printf("Sum of 1st digit of all array = %d\n", total);
+
+    // Step 5: Clean up
+    free(p);      // Release heap memory
+    p = NULL;     // Bury the ghost: prevent dangling pointer
+
+    return 0;
+}
+
+// 2. Definitions
+int get_first_digit(int num) {
+    if (num < 0) {
+        num = -num;
+    }
+    while (num >= 10) {
+        num /= 10;
+    }
+    return num; // Returns single extracted digit
+}
+
+int sum_of_first_digits(const int *p, int n) {
+    int sum = 0;
+    for (int i = 0; i < n; i++) {
+        sum += get_first_digit(*(p + i));
+    }
+    return sum; // Returns final calculated sum
+}
