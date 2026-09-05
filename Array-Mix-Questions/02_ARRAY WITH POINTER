@@ -1,0 +1,36 @@
+#include <stdio.h>
+
+int main(void) {
+    int n, i, sum = 0;
+
+    printf("enter number of array ele:\n");
+    scanf("%d", &n);
+
+    if (n <= 0) {
+        printf("invalid array size!\n");
+        return 1;
+    }
+
+    int a[n];
+    int *p = a;
+
+    printf("enter the array elements:\n");
+    for (i = 0; i < n; i++) {
+        scanf("%d", p + i);
+    }
+
+    for (i = 0; i < n; i++) {
+        int temp = *(p + i);
+        if (temp < 0) {
+            temp = -temp;
+        }
+        while (temp >= 10) {
+            temp = temp / 10;
+        }
+        sum = sum + temp;
+    }
+
+    printf("sum of 1st digit of all array = %d\n", sum);
+
+    return 0;
+}
