@@ -1,0 +1,52 @@
+#include<stdio.h>
+void del_perfect_fun(int *arr,int *ele);
+int perfect(int num);
+int main()
+{
+    int a[6],ele,i;
+    ele=sizeof(a)/sizeof(a[0]);
+    printf("enter the array elements:\n");
+    for(i=0;i<ele;i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    del_perfect_fun(a,&ele);
+    printf("result :\n");
+    for(i=0;i<ele;i++)
+    {
+        printf("%d ",a[i]);
+    }
+    return 0;
+}
+int perfect(int num)
+{
+  int i,sum=0;
+  for(i=1;i<num;i++)
+  {
+    if(num%i==0)
+    {
+        sum=sum+i;
+    }
+  }
+    if(sum==num)
+    return 1;
+    else
+    return 0;
+  
+}
+void del_perfect_fun(int *arr,int *ele)
+{
+    int i,j;
+    for(i=0;i<*ele;i++)
+    {
+    if(perfect(arr[i]))
+    {
+        for(j=i;j<*ele-1;j++)
+        {
+            arr[j]=arr[j+1];
+        }
+        (*ele)--;
+        i--;
+    }
+    }
+}
