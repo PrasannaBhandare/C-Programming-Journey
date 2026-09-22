@@ -1,0 +1,82 @@
+#include<stdio.h>
+int power(int base,int exp);
+int is_armstrong(int n);
+int count_armstrong(int *arr,int ele);
+int main()
+{
+    int n;
+    printf("enter number of array elemnets:\n");
+    scanf("%d",&n);
+    int a[n],i;
+    printf("enter the array element:\n");
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    printf("Armstrong numbers are:\n");
+    int count = count_armstrong(a, n);
+    printf("\nArmstrong count=%d\n", count);
+    return 0; 
+}
+int power(int base,int exp)
+{
+    int res=1,i;
+    for(i=0;i<exp;i++)
+    {
+        res=res*base;
+    }
+    return res;
+}
+
+
+int is_armstrong(int n)
+{
+    if(n<0)
+    {
+        return 0;
+    }
+    if(n>=0 && n<=9)
+    {
+        return 1;
+    }
+    //count digit
+    int temp=n;
+    int digit=0;
+    while(temp>0)
+    {
+        digit++;
+        temp=temp/10;
+    }
+    //sum of digit raised to power of digit
+    temp=n;
+    int sum=0;
+    while(temp>0)
+    {
+        int rem=temp%10;
+        sum=sum+power(rem,digit);
+        temp=temp/10;
+    }
+    //does the no match original
+    if(sum==n)
+    {
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
+int count_armstrong(int *arr,int ele)
+{
+   int count=0;
+   int i;
+   for(i=0;i<ele;i++)
+   {
+    if(is_armstrong(arr[i]))
+    {
+        printf("%d ", arr[i]);
+        count++;
+    }
+   }
+   return count;
+}
