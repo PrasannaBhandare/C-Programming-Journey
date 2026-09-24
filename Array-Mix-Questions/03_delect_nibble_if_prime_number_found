@@ -1,0 +1,62 @@
+#include<stdio.h>
+int is_prime(int n);
+int check_nibble(int num);
+void delete_nibble_prime(int *arr,int *ele);
+int main()
+{
+    int n;
+    printf("enter the no ele:\n");
+    scanf("%d",&n);
+    int a[n],i;
+    printf("enter the array elements:\n");
+    for(i=0;i<n;i++)
+    scanf("%d",&a[i]);
+    delete_nibble_prime(a,&n);
+    printf("updated array:");
+    for(i=0;i<n;i++)
+    printf("%d ",a[i]);
+    return 0;
+}
+int is_prime(int n)
+{
+    if (n < 2)
+    {
+        return 0;
+    }
+
+    for (int i = 2; i * i <= n; i++)
+    {
+        if (n % i == 0)
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+int check_nibble(int num)
+{
+    int lower = num & 15;
+    int upper = (num >> 4) & 15;
+
+    return is_prime(lower) || is_prime(upper);
+}
+void delete_nibble_prime(int *arr,int *ele)
+{
+    int i=0;
+    while(i<*ele)
+    {
+        if(check_nibble(arr[i]))
+        {
+            for(int j=i;j<*ele-1;j++)
+            {
+                arr[j]=arr[j+1];
+            }
+            (*ele)--;
+        }
+        else{
+            i++;
+        }
+    }
+}
