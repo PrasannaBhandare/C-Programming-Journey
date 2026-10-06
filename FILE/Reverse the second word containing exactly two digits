@@ -1,0 +1,628 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+
+/*
+    FUNCTION DECLARATIONS
+
+    reverse()        -> reverses characters between start and end
+    has_two_digits() -> checks whether a word has exactly 2 digits
+    rev_word()       -> finds the second word and processes it
+*/
+
+void reverse(char *start, char *end);
+
+int has_two_digits(char *str, int start, int end);
+
+void rev_word(char *str);
+
+
+int main(int argc, char *argv[])
+{
+    /*
+        argc = number of command-line arguments
+
+        argv = array of command-line argument strings
+
+        argv[1] will contain the filename.
+    */
+
+
+    /* --------------------------------------------------
+       STEP 1: CHECK COMMAND-LINE ARGUMENT
+       -------------------------------------------------- */
+
+    if (argc < 2)
+    {
+        /*
+            If filename is not given while running the program,
+            show the correct usage.
+        */
+
+        printf("Usage: %s <filename>\n", argv[0]);
+
+        return 1;
+    }
+
+
+    /* --------------------------------------------------
+       STEP 2: CREATE / OPEN FILE FOR WRITING
+       -------------------------------------------------- */
+
+    FILE *fp = fopen(argv[1], "w");
+
+    /*
+        FILE *fp
+        ----------------
+        fp is a file pointer.
+
+        fopen(argv[1], "w")
+        --------------------
+        Opens the filename given in command line.
+
+        "w" means write mode.
+
+        If the file does not exist -> creates it.
+        If it already exists       -> clears old contents.
+    */
+
+
+    if (fp == NULL)
+    {
+        /*
+            fopen() returns NULL if the file cannot be opened.
+        */
+
+        printf("Error: Could not create file.\n");
+
+        return 1;
+    }
+
+
+    /* --------------------------------------------------
+       STEP 3: GET NUMBER OF LINES
+       -------------------------------------------------- */
+
+    int n;
+
+    printf("Enter number of lines: ");
+
+    scanf("%d", &n);
+
+    /*
+        &n gives the address of n.
+
+        scanf() stores the user's input into n.
+    */
+
+
+    /*
+        scanf() leaves the ENTER key's '\n' in the input buffer.
+
+        getchar() removes that leftover newline.
+    */
+
+    while (getchar() != '\n');
+
+
+    /* --------------------------------------------------
+       STEP 4: TEMPORARY BUFFER
+       -------------------------------------------------- */
+
+    char temp[512];
+
+    /*
+        temp is a temporary array used to read one line.
+
+        Maximum:
+            511 characters
+            + 1 '\0'
+
+        We use temp only while reading the line.
+    */
+
+
+    printf("Enter %d lines of data:\n", n);
+
+
+    /* --------------------------------------------------
+       STEP 5: READ LINES AND WRITE THEM TO FILE
+       -------------------------------------------------- */
+
+    for (int i = 0; i < n; i++)
+    {
+        /*
+            Read one complete line from keyboard.
+
+            stdin = keyboard input.
+        */
+
+        fgets(temp, sizeof(temp), stdin);
+
+
+        /*
+            Write the line stored in temp into the file.
+        */
+
+        fputs(temp, fp);
+    }
+
+
+    /*
+        We have finished writing the input.
+
+        Therefore close the file.
+    */
+
+    fclose(fp);
+
+
+    /* ==================================================
+       STEP 6: OPEN FILE FOR READING
+       ================================================== */
+
+    fp = fopen(argv[1], "r");
+
+    /*
+        "r" means read mode.
+
+        Now we read the lines from the file.
+    */
+
+
+    if (fp == NULL)
+    {
+        printf("Error: Could not open file for reading.\n");
+
+        return 1;
+    }
+
+
+    /* ==================================================
+       STEP 7: ALLOCATE ARRAY OF CHARACTER POINTERS
+       ================================================== */
+
+    char **p = malloc(n * sizeof(char *));
+
+    /*
+        IMPORTANT DMA CONCEPT
+
+        p is a pointer to pointers.
+
+        We need one pointer for each line.
+
+        If n = 3:
+
+            p
+            |
+            +---- p[0] -> line 1
+            |
+            +---- p[1] -> line 2
+            |
+            +---- p[2] -> line 3
+
+        malloc() creates space for n character pointers.
+
+        We are NOT allocating the actual lines yet.
+    */
+
+
+    if (p == NULL)
+    {
+        /*
+            malloc() returns NULL if memory allocation fails.
+        */
+
+        printf("Memory allocation failed.\n");
+
+        fclose(fp);
+
+        return 1;
+    }
+
+
+    /* ==================================================
+       STEP 8: READ EACH LINE AND ALLOCATE EXACT MEMORY
+       ================================================== */
+
+    for (int i = 0; i < n; i++)
+    {
+        /*
+            Read one line from the file into temp.
+        */
+
+        fgets(temp, sizeof(temp), fp);
+
+
+        /*
+            Find the actual length of the line.
+
+            We cannot use strlen() because that requires
+            string.h.
+
+            So we count manually.
+        */
+
+        int len = 0;
+
+        while (temp[len] != '\0')
+        {
+            len++;
+        }
+
+
+        /*
+            Now len contains the number of characters.
+
+            Example:
+
+            temp = "Hello ab12\n"
+
+            Index:
+             H e l l o   a b 1 2 \n \0
+             0 1 2 3 4 5 6 7 8 9 10 11
+
+            len = 11
+
+            We need 12 bytes:
+                11 characters
+                + 1 '\0'
+        */
+
+
+        /*
+            Allocate ONLY the required memory.
+
+            len + 1 is required because of '\0'.
+        */
+
+        p[i] = malloc((len + 1) * sizeof(char));
+
+
+        /*
+            p[i] now points to the memory allocated
+            for the i-th line.
+
+            Example:
+
+            p[0] -> memory for line 1
+            p[1] -> memory for line 2
+            p[2] -> memory for line 3
+        */
+
+
+        if (p[i] == NULL)
+        {
+            /*
+                Check whether allocation for this line failed.
+            */
+
+            printf("Memory allocation failed.\n");
+
+            return 1;
+        }
+
+
+        /* ==================================================
+           STEP 9: COPY TEMP INTO DYNAMIC MEMORY
+           ================================================== */
+
+        for (int j = 0; j <= len; j++)
+        {
+            /*
+                Copy every character.
+
+                j <= len is important.
+
+                Why?
+
+                Because when j == len,
+                temp[j] is '\0'.
+
+                We must also copy '\0'.
+            */
+
+            p[i][j] = temp[j];
+        }
+
+
+        /*
+            Now the actual line is stored in dynamically
+            allocated memory.
+
+            Therefore we can process it.
+        */
+
+        rev_word(p[i]);
+    }
+
+
+    /*
+        Finished reading all lines.
+    */
+
+    fclose(fp);
+
+
+    /* ==================================================
+       STEP 10: OPEN FILE AGAIN FOR WRITING
+       ================================================== */
+
+    fp = fopen(argv[1], "w");
+
+    /*
+        Open the same file in write mode.
+
+        This clears the old contents.
+
+        We will now write the modified lines.
+    */
+
+
+    if (fp == NULL)
+    {
+        printf("Error: Could not open file for writing.\n");
+
+        return 1;
+    }
+
+
+    /* ==================================================
+       STEP 11: WRITE MODIFIED LINES
+       ================================================== */
+
+    for (int i = 0; i < n; i++)
+    {
+        /*
+            Write the modified line into the file.
+        */
+
+        fputs(p[i], fp);
+
+
+        /*
+            We no longer need this line in memory.
+
+            So release its dynamically allocated memory.
+        */
+
+        free(p[i]);
+    }
+
+
+    /*
+        We have freed every individual line.
+
+        Now free the array of pointers itself.
+    */
+
+    free(p);
+
+
+    /*
+        Close the file.
+    */
+
+    fclose(fp);
+
+
+    printf("\nFile '%s' successfully updated!\n", argv[1]);
+
+
+    return 0;
+}
+
+
+/* ======================================================
+   FUNCTION 1: REVERSE CHARACTERS
+   ====================================================== */
+
+void reverse(char *start, char *end)
+{
+    /*
+        start -> address of first character
+        end   -> address of last character
+
+        Example:
+
+        "ab12"
+
+        start -> a
+        end   -> 2
+    */
+
+
+    while (start < end)
+    {
+        /*
+            Temporary variable stores the first character.
+        */
+
+        char temp = *start;
+
+
+        /*
+            Put the last character into the first position.
+        */
+
+        *start = *end;
+
+
+        /*
+            Put the original first character into the last
+            position.
+        */
+
+        *end = temp;
+
+
+        /*
+            Move start towards the right.
+        */
+
+        start++;
+
+
+        /*
+            Move end towards the left.
+        */
+
+        end--;
+    }
+}
+
+
+/* ======================================================
+   FUNCTION 2: CHECK WHETHER WORD HAS EXACTLY 2 DIGITS
+   ====================================================== */
+
+int has_two_digits(char *str, int start, int end)
+{
+    /*
+        digits stores the number of digits found.
+    */
+
+    int digits = 0;
+
+
+    /*
+        Check every character from start to end.
+    */
+
+    for (int i = start; i <= end; i++)
+    {
+        /*
+            Check whether current character is 0-9.
+
+            '0' to '9' are character constants.
+        */
+
+        if (str[i] >= '0' && str[i] <= '9')
+        {
+            digits++;
+        }
+    }
+
+
+    /*
+        Return 1 if exactly 2 digits were found.
+
+        Otherwise return 0.
+    */
+
+    return (digits == 2);
+}
+
+
+/* ======================================================
+   FUNCTION 3: FIND SECOND WORD
+   ====================================================== */
+
+void rev_word(char *str)
+{
+    /*
+        i = current character position
+
+        word_count = number of words found
+    */
+
+    int i = 0;
+
+    int word_count = 0;
+
+
+    /*
+        Continue until end of string.
+    */
+
+    while (str[i] != '\0')
+    {
+        /*
+            Skip spaces and tabs before a word.
+        */
+
+        while (str[i] == ' ' || str[i] == '\t')
+        {
+            i++;
+        }
+
+
+        /*
+            Stop if we reached the end of the string
+            or newline.
+        */
+
+        if (str[i] == '\0' || str[i] == '\n')
+        {
+            break;
+        }
+
+
+        /*
+            Store the starting position of the word.
+        */
+
+        int start = i;
+
+
+        /*
+            Move i until we reach the end of the word.
+
+            A word ends at:
+                space
+                tab
+                newline
+                '\0'
+        */
+
+        while (str[i] != ' ' &&
+               str[i] != '\t' &&
+               str[i] != '\n' &&
+               str[i] != '\0')
+        {
+            i++;
+        }
+
+
+        /*
+            i is now one position AFTER the word.
+
+            Therefore:
+                end = i - 1
+        */
+
+        int end = i - 1;
+
+
+        /*
+            We found one word.
+        */
+
+        word_count++;
+
+
+        /*
+            We only want the SECOND word.
+        */
+
+        if (word_count == 2)
+        {
+            /*
+                Check whether the second word
+                contains exactly 2 digits.
+            */
+
+            if (has_two_digits(str, start, end))
+            {
+                /*
+                    Pass the address of the first and last
+                    characters of the second word.
+
+                    reverse() changes the word in place.
+                */
+
+                reverse(&str[start], &str[end]);
+            }
+        }
+    }
+}
